@@ -7,13 +7,13 @@ export default function Home() {
   const [sortKey, setSortKey] = useState("profitPercent");
   const [sortDir, setSortDir] = useState("desc");
 
-  const [minVolume, setMinVolume] = useState(0);
-  const [minMargin, setMinMargin] = useState(0);
+  const [minVolume, setMinVolume] = useState("");
+  const [minMargin, setMinMargin] = useState("");
 
-  const [minBuy, setMinBuy] = useState(0);
-  const [maxBuy, setMaxBuy] = useState(Infinity);
-  const [minSell, setMinSell] = useState(0);
-  const [maxSell, setMaxSell] = useState(Infinity);
+  const [minBuy, setMinBuy] = useState("");
+  const [maxBuy, setMaxBuy] = useState("");
+  const [minSell, setMinSell] = useState("");
+  const [maxSell, setMaxSell] = useState("");
 
   useEffect(() => {
     load();
@@ -68,18 +68,23 @@ export default function Home() {
     );
   }
 
-  // ⭐ FIXED FILTERS — no more “everything disappears”
+  // Convert empty strings to Infinity or 0 safely
+  const minBuyVal = minBuy === "" ? 0 : Number(minBuy);
+  const maxBuyVal = maxBuy === "" ? Infinity : Number(maxBuy);
+  const minSellVal = minSell === "" ? 0 : Number(minSell);
+  const maxSellVal = maxSell === "" ? Infinity : Number(maxSell);
+  const minVolVal = minVolume === "" ? 0 : Number(minVolume);
+  const minMarginVal = minMargin === "" ? 0 : Number(minMargin);
+
   const filtered = products.filter(p =>
-    p.volume > 0 &&
-    p.buy >= minBuy &&
-    (maxBuy === Infinity || p.buy <= maxBuy) &&
-    p.sell >= minSell &&
-    (maxSell === Infinity || p.sell <= maxSell) &&
-    p.profitPercent >= minMargin &&
-    p.volume >= minVolume
+    p.volume >= minVolVal &&
+    p.profitPercent >= minMarginVal &&
+    p.buy >= minBuyVal &&
+    p.buy <= maxBuyVal &&
+    p.sell >= minSellVal &&
+    p.sell <= maxSellVal
   );
 
-  // ⭐ Sorting (asc/desc)
   const sorted = [...filtered].sort((a, b) => {
     const A = a[sortKey] ?? -999999;
     const B = b[sortKey] ?? -999999;
@@ -88,7 +93,6 @@ export default function Home() {
     return B - A;
   });
 
-  // ⭐ Clickable headers with arrows
   function header(label, key) {
     return (
       <th
@@ -115,65 +119,72 @@ export default function Home() {
         Buy orders → sell offers, crafting profit, NPC profit, filters & sorting.
       </p>
 
-      {/* ⭐ FILTERS */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <input
-          type="number"
-          placeholder="Min Volume"
-          className="px-3 py-2 bg-gray-800 rounded"
-          value={minVolume}
-          onChange={e => setMinVolume(Number(e.target.value) || 0)}
-        />
+      {/* ⭐ FILTERS WITH LABELS */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
 
-        <input
-          type="number"
-          placeholder="Min Profit %"
-          className="px-3 py-2 bg-gray-800 rounded"
-          value={minMargin}
-          onChange={e => setMinMargin(Number(e.target.value) || 0)}
-        />
+        <div>
+          <label className="text-gray-400 text-sm">Minimum Volume</label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 bg-gray-800 rounded"
+            value={minVolume}
+            onChange={e => setMinVolume(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="number"
-          placeholder="Min Buy Price"
-          className="px-3 py-2 bg-gray-800 rounded"
-          value={minBuy}
-          onChange={e => setMinBuy(Number(e.target.value) || 0)}
-        />
+        <div>
+          <label className="text-gray-400 text-sm">Minimum Profit %</label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 bg-gray-800 rounded"
+            value={minMargin}
+            onChange={e => setMinMargin(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="number"
-          placeholder="Max Buy Price"
-          className="px-3 py-2 bg-gray-800 rounded"
-          value={maxBuy === Infinity ? "" : maxBuy}
-          onChange={e => {
-            const v = e.target.value;
-            setMaxBuy(v === "" ? Infinity : Number(v));
-          }}
-        />
+        <div>
+          <label className="text-gray-400 text-sm">Min Buy Price</label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 bg-gray-800 rounded"
+            value={minBuy}
+            onChange={e => setMinBuy(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="number"
-          placeholder="Min Sell Price"
-          className="px-3 py-2 bg-gray-800 rounded"
-          value={minSell}
-          onChange={e => setMinSell(Number(e.target.value) || 0)}
-        />
+        <div>
+          <label className="text-gray-400 text-sm">Max Buy Price</label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 bg-gray-800 rounded"
+            value={maxBuy}
+            onChange={e => setMaxBuy(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="number"
-          placeholder="Max Sell Price"
-          className="px-3 py-2 bg-gray-800 rounded"
-          value={maxSell === Infinity ? "" : maxSell}
-          onChange={e => {
-            const v = e.target.value;
-            setMaxSell(v === "" ? Infinity : Number(v));
-          }}
-        />
+        <div>
+          <label className="text-gray-400 text-sm">Min Sell Price</label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 bg-gray-800 rounded"
+            value={minSell}
+            onChange={e => setMinSell(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="text-gray-400 text-sm">Max Sell Price</label>
+          <input
+            type="number"
+            className="w-full px-3 py-2 bg-gray-800 rounded"
+            value={maxSell}
+            onChange={e => setMaxSell(e.target.value)}
+          />
+        </div>
 
         <button
           onClick={load}
-          className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 h-fit mt-auto"
         >
           Refresh
         </button>
