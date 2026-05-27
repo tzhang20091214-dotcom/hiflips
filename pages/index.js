@@ -62,9 +62,8 @@ export default function Home() {
     );
   }
 
-  const filtered = products
-    .filter(p => p.volume >= minVolume)
-    .filter(p => p.profitPercent >= minMargin);
+  const filtered = products;
+
 
   const sorted = [...filtered].sort((a, b) => {
     return (b[sortKey] ?? -999999) - (a[sortKey] ?? -999999);
