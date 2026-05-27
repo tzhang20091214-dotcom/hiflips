@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { recipes, computeCraftCost, npcPrices } from "../lib/recipes";
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(null); // null = not loaded yet
   const [sortKey, setSortKey] = useState("profitPercent");
   const [minVolume, setMinVolume] = useState(0);
   const [minMargin, setMinMargin] = useState(0);
@@ -48,6 +47,14 @@ export default function Home() {
     }
 
     setProducts(rows);
+  }
+
+  if (!products) {
+    return (
+      <div className="p-6 text-center text-xl text-gray-300">
+        Loading Bazaar data...
+      </div>
+    );
   }
 
   const filtered = products
