@@ -3,6 +3,7 @@ import { recipes, computeCraftCost, npcPrices } from "../lib/recipes";
 
 export default function Home() {
   const [products, setProducts] = useState(null);
+
   const [sortKey, setSortKey] = useState("profitPercent");
   const [sortDir, setSortDir] = useState("desc");
 
@@ -67,16 +68,18 @@ export default function Home() {
     );
   }
 
+  // ⭐ FIXED FILTERS — no more “everything disappears”
   const filtered = products.filter(p =>
     p.volume > 0 &&
     p.buy >= minBuy &&
-    p.buy <= maxBuy &&
+    (maxBuy === Infinity || p.buy <= maxBuy) &&
     p.sell >= minSell &&
-    p.sell <= maxSell &&
+    (maxSell === Infinity || p.sell <= maxSell) &&
     p.profitPercent >= minMargin &&
     p.volume >= minVolume
   );
 
+  // ⭐ Sorting (asc/desc)
   const sorted = [...filtered].sort((a, b) => {
     const A = a[sortKey] ?? -999999;
     const B = b[sortKey] ?? -999999;
@@ -85,6 +88,7 @@ export default function Home() {
     return B - A;
   });
 
+  // ⭐ Clickable headers with arrows
   function header(label, key) {
     return (
       <th
@@ -111,6 +115,7 @@ export default function Home() {
         Buy orders → sell offers, crafting profit, NPC profit, filters & sorting.
       </p>
 
+      {/* ⭐ FILTERS */}
       <div className="flex flex-wrap gap-4 mb-6">
         <input
           type="number"
@@ -141,7 +146,10 @@ export default function Home() {
           placeholder="Max Buy Price"
           className="px-3 py-2 bg-gray-800 rounded"
           value={maxBuy === Infinity ? "" : maxBuy}
-          onChange={e => setMaxBuy(e.target.value === "" ? Infinity : Number(e.target.value))}
+          onChange={e => {
+            const v = e.target.value;
+            setMaxBuy(v === "" ? Infinity : Number(v));
+          }}
         />
 
         <input
@@ -157,7 +165,10 @@ export default function Home() {
           placeholder="Max Sell Price"
           className="px-3 py-2 bg-gray-800 rounded"
           value={maxSell === Infinity ? "" : maxSell}
-          onChange={e => setMaxSell(e.target.value === "" ? Infinity : Number(e.target.value))}
+          onChange={e => {
+            const v = e.target.value;
+            setMaxSell(v === "" ? Infinity : Number(v));
+          }}
         />
 
         <button
@@ -168,6 +179,7 @@ export default function Home() {
         </button>
       </div>
 
+      {/* ⭐ TABLE */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-gray-800 rounded">
           <thead className="bg-gray-700">
