@@ -2,10 +2,17 @@ import { useEffect, useState } from "react";
 import { recipes, computeCraftCost, npcPrices } from "../lib/recipes";
 
 export default function Home() {
-  const [products, setProducts] = useState(null); // null = not loaded yet
+  const [products, setProducts] = useState(null);
   const [sortKey, setSortKey] = useState("profitPercent");
+  const [sortDir, setSortDir] = useState("desc");
+
   const [minVolume, setMinVolume] = useState(0);
   const [minMargin, setMinMargin] = useState(0);
+
+  const [minBuy, setMinBuy] = useState(0);
+  const [maxBuy, setMaxBuy] = useState(Infinity);
+  const [minSell, setMinSell] = useState(0);
+  const [maxSell, setMaxSell] = useState(Infinity);
 
   useEffect(() => {
     load();
@@ -21,7 +28,6 @@ export default function Home() {
       const product = bazaar[id];
       const q = product.quick_status;
 
-      // Skip items with missing or invalid data
       if (!q || q.buyPrice <= 0 || q.sellPrice <= 0) continue;
 
       const buy = q.buyPrice;
@@ -47,12 +53,11 @@ export default function Home() {
         craftProfit,
         npcSell,
         npcProfit,
-    });
+      });
+    }
+
+    setProducts(rows);
   }
-
-  setProducts(rows);
-}
-
 
   if (!products) {
     return (
@@ -63,26 +68,38 @@ export default function Home() {
   }
 
   const filtered = products.filter(p =>
-    p.volume > 0 &&          // must have some volume
-    p.buy > 0 &&             // must have a real buy price
-    p.sell > 0 &&            // must have a real sell price
-    p.profitPercent >= minMargin &&  // user filter
-    p.volume >= minVolume            // user filter
+    p.volume > 0 &&
+    p.buy >= minBuy &&
+    p.buy <= maxBuy &&
+    p.sell >= minSell &&
+    p.sell <= maxSell &&
+    p.profitPercent >= minMargin &&
+    p.volume >= minVolume
   );
 
-
-
   const sorted = [...filtered].sort((a, b) => {
-    return (b[sortKey] ?? -999999) - (a[sortKey] ?? -999999);
+    const A = a[sortKey] ?? -999999;
+    const B = b[sortKey] ?? -999999;
+
+    if (sortDir === "asc") return A - B;
+    return B - A;
   });
 
   function header(label, key) {
     return (
       <th
-        className="px-4 py-2 cursor-pointer hover:text-blue-400"
-        onClick={() => setSortKey(key)}
+        className="px-4 py-2 cursor-pointer hover:text-blue-400 select-none"
+        onClick={() => {
+          if (sortKey === key) {
+            setSortDir(sortDir === "asc" ? "desc" : "asc");
+          } else {
+            setSortKey(key);
+            setSortDir("desc");
+          }
+        }}
       >
         {label}
+        {sortKey === key && (sortDir === "asc" ? " ↑" : " ↓")}
       </th>
     );
   }
@@ -102,6 +119,7 @@ export default function Home() {
           value={minVolume}
           onChange={e => setMinVolume(Number(e.target.value) || 0)}
         />
+
         <input
           type="number"
           placeholder="Min Profit %"
@@ -109,6 +127,39 @@ export default function Home() {
           value={minMargin}
           onChange={e => setMinMargin(Number(e.target.value) || 0)}
         />
+
+        <input
+          type="number"
+          placeholder="Min Buy Price"
+          className="px-3 py-2 bg-gray-800 rounded"
+          value={minBuy}
+          onChange={e => setMinBuy(Number(e.target.value) || 0)}
+        />
+
+        <input
+          type="number"
+          placeholder="Max Buy Price"
+          className="px-3 py-2 bg-gray-800 rounded"
+          value={maxBuy === Infinity ? "" : maxBuy}
+          onChange={e => setMaxBuy(e.target.value === "" ? Infinity : Number(e.target.value))}
+        />
+
+        <input
+          type="number"
+          placeholder="Min Sell Price"
+          className="px-3 py-2 bg-gray-800 rounded"
+          value={minSell}
+          onChange={e => setMinSell(Number(e.target.value) || 0)}
+        />
+
+        <input
+          type="number"
+          placeholder="Max Sell Price"
+          className="px-3 py-2 bg-gray-800 rounded"
+          value={maxSell === Infinity ? "" : maxSell}
+          onChange={e => setMaxSell(e.target.value === "" ? Infinity : Number(e.target.value))}
+        />
+
         <button
           onClick={load}
           className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
