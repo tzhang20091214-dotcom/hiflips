@@ -62,7 +62,14 @@ export default function Home() {
     );
   }
 
-  const filtered = products;
+  const filtered = products.filter(p =>
+    p.volume > 0 &&          // must have some volume
+    p.buy > 0 &&             // must have a real buy price
+    p.sell > 0 &&            // must have a real sell price
+    p.profitPercent >= minMargin &&  // user filter
+    p.volume >= minVolume            // user filter
+  );
+
 
 
   const sorted = [...filtered].sort((a, b) => {
