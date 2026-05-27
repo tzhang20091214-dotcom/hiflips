@@ -18,10 +18,14 @@ export default function Home() {
 
     const rows = [];
     for (const id in bazaar) {
-      const q = bazaar[id].quick_status;
+      const product = bazaar[id];
+      const q = product.quick_status;
+
+      // Skip items with missing or invalid data
+      if (!q || q.buyPrice <= 0 || q.sellPrice <= 0) continue;
+
       const buy = q.buyPrice;
       const sell = q.sellPrice;
-      if (buy <= 0) continue;
 
       const profit = sell - buy;
       const profitPercent = (profit / buy) * 100;
@@ -38,16 +42,17 @@ export default function Home() {
         sell,
         profit,
         profitPercent,
-        volume: q.sellVolume,
+        volume: q.sellVolume ?? 0,
         craftCost,
         craftProfit,
         npcSell,
         npcProfit,
-      });
-    }
-
-    setProducts(rows);
+    });
   }
+
+  setProducts(rows);
+}
+
 
   if (!products) {
     return (
